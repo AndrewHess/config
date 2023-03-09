@@ -1,0 +1,11 @@
+session_name: plover
+windows:
+- window_name: clippy
+  shell_command_before:
+    - cd ~/Library/Application\ Support/plover
+  panes:
+    - shell_command:
+      - tail -f clippy_2.org
+- window_name: dictionaries
+  shell_command_before:
+    - cd ~/Library/Application\ Support/plover/dictionaries
