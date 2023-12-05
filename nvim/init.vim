@@ -86,8 +86,9 @@ Plug 'shortcuts/no-neck-pain.nvim', { 'tag': '*' }
 " Copilot
 Plug 'github/copilot.vim'
 
-" Gotham theme
+" Color schemes
 Plug 'whatyouhide/vim-gotham'
+Plug 'https://github.com/AlessandroYorba/Alduin'
 
 " Initialize plugin system
 " - Automatically executes `filetype plugin indent on` and `syntax enable`.
