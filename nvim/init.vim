@@ -6,8 +6,13 @@ autocmd FileType make setlocal noexpandtab tabstop=4 shiftwidth=4
 autocmd FileType yaml setlocal shiftwidth=2 softtabstop=2 expandtab
 
 " Run goimports when saving a .go file
-" autocmd BufWritePost *.go execute 'silent! !goimports -w ' . shellescape(expand('%:p')) | e
-autocmd BufWritePre *.go execute 'call GoImports()'
+"autocmd BufWritePre *.go execute 'call GoImports()'
+
+augroup goimports
+    autocmd!
+    autocmd BufWritePre *.go execute 'call GoImports()'
+augroup END
+
 
 " Activate syntax highlighting
 autocmd BufRead,BufNewFile *.peg set filetype=pigeon
@@ -19,13 +24,22 @@ autocmd BufRead,BufNewFile *.mine set filetype=mine
 :set colorcolumn=80,100
 :set foldmethod=manual
 :set mouse=
-:set tags+=./tags
+:set tags+=.tags
 :set wildmenu
 :set history=1000
+:set ignorecase
 
+" Rebind keys
+nnoremap <C-]> <C-]>z<CR>
+
+" Custom commands
 nnoremap <leader>f :call GoImports()<CR>
 nnoremap <leader>n :NoNeckPain<CR>
 nnoremap <leader>m :NoNeckPainResize 100<CR>
+nnoremap <leader>t :!gotags -R * > .tags<CR>
+nnoremap <leader>sf <cmd>lua require('telescope.builtin').find_files()<CR>
+nnoremap <leader>sg <cmd>lua require('telescope.builtin').live_grep()<CR>
+nnoremap <leader>ss yiw:Telescope live_grep<CR><C-r>"<ESC>
 
 function! GoImports()
   let l:view = winsaveview()
@@ -45,10 +59,11 @@ call plug#begin()
 "   - Avoid using standard Vim directory names like 'plugin'
 
 " Make sure you use single quotes
-
-" fzf for searching
-Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
-Plug 'junegunn/fzf.vim'
+"
+" Telescope for searching
+Plug 'nvim-lua/plenary.nvim'
+Plug 'nvim-treesitter/nvim-treesitter'
+Plug 'nvim-telescope/telescope.nvim', { 'tag': '0.1.x' }
 
 " no-neck-pain for centering windows
 Plug 'shortcuts/no-neck-pain.nvim', { 'tag': '*' }
