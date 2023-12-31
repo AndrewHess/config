@@ -29,9 +29,13 @@ autocmd BufRead,BufNewFile *.mine set filetype=mine
 :set wildmenu
 :set history=1000
 :set ignorecase
+:set termguicolors
+
+let mapleader = "f"
 
 " Rebind keys
 nnoremap <C-]> <C-]>z<CR>
+inoremap kj <ESC>
 
 " Custom commands
 nnoremap <leader>n :NoNeckPain<CR>
@@ -40,8 +44,13 @@ nnoremap <leader>t :!gotags -R **/*.go > .tags<CR>
 nnoremap <leader>sf <cmd>lua require('telescope.builtin').find_files()<CR>
 nnoremap <leader>sg <cmd>lua require('telescope.builtin').live_grep()<CR>
 nnoremap <leader>ss yiw:Telescope live_grep<CR><C-r>"<ESC>
-nnoremap <leader>gtd :lua require('gtd').list_gtd_files()<CR>
-nnoremap <Leader>f :call GoFunctionTop()<CR>
+nnoremap <leader>d :lua require('gtd.view_manager').show_views_list()<CR>
+nnoremap <leader>t :call GoFunctionTop()<CR>
+nnoremap <leader>f f
+nnoremap <leader>h :noh<CR>
+nnoremap <leader>o :norm o<ESC>0d$
+nnoremap <leader>O O<ESC>0d$
+nnoremap <leader>w :w<CR>
 
 
 function! GoImports()
@@ -89,6 +98,11 @@ Plug 'github/copilot.vim'
 " Color schemes
 Plug 'whatyouhide/vim-gotham'
 Plug 'https://github.com/AlessandroYorba/Alduin'
+Plug 'https://github.com/AlessandroYorba/Despacio'
+Plug 'https://github.com/w0ng/vim-hybrid'
+
+" Miscellanous
+Plug 'https://tpope.io/vim/commentary.git' " Commenting
 
 " Initialize plugin system
 " - Automatically executes `filetype plugin indent on` and `syntax enable`.
@@ -100,8 +114,10 @@ call plug#end()
 filetype indent off
 
 " Set the color scheme
-colorscheme alduin  " From https://github.com/AlessandroYorba/Alduin
+"colorscheme alduin
 "colorscheme gotham256
+"colorscheme despacio
+colorscheme hybrid
 
 source ~/.config/nvim/syntax/mine.vim
 
