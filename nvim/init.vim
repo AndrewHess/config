@@ -34,29 +34,54 @@ autocmd BufRead,BufNewFile *.mine set filetype=mine
 let mapleader = "f"
 
 " Rebind keys
-nnoremap <C-]> <C-]>z<CR>
+nnoremap <C-]> :call ReloadTags()<CR><C-]>z<CR>
 inoremap kj <ESC>
 
 " Custom commands
-nnoremap <leader>n :NoNeckPain<CR>
-nnoremap <leader>m :NoNeckPainResize 120<CR>
-nnoremap <leader>t :!gotags -R **/*.go > .tags<CR>
-nnoremap <leader>sf <cmd>lua require('telescope.builtin').find_files()<CR>
-nnoremap <leader>sg <cmd>lua require('telescope.builtin').live_grep()<CR>
-nnoremap <leader>ss yiw:Telescope live_grep<CR><C-r>"<ESC>
+nnoremap <leader>l :call ReloadTags()<CR>
+nnoremap <leader>t <cmd>lua require('telescope.builtin').find_files()<CR>
+nnoremap <leader>g <cmd>lua require('telescope.builtin').live_grep()<CR>
+nnoremap <leader>m yiw:Telescope live_grep<CR><C-r>"<ESC>
 nnoremap <leader>d :lua require('gtd.view_manager').show_views_list()<CR>
-nnoremap <leader>t :call GoFunctionTop()<CR>
+nnoremap <leader>T :call GoFunctionTop()<CR>
 nnoremap <leader>f f
 nnoremap <leader>h :noh<CR>
 nnoremap <leader>o :norm o<ESC>0d$
 nnoremap <leader>O O<ESC>0d$
 nnoremap <leader>w :w<CR>
 
+function! ReloadTags()
+    :silent! !gotags -R **/*.go > .tags
+endfunction
+
 
 function! GoImports()
   let l:view = winsaveview()
-  execute 'silent! %!goimports'
-  call winrestview(l:view)
+
+  " Save the current buffer content in a variable
+  let l:current_buffer = join(getline(1, '$'), "\n")
+
+  " Run goimports and capture the output
+  let l:output = system('goimports', l:current_buffer)
+
+  " Check if goimports succeeded
+  if v:shell_error == 0
+    " Replace buffer content only if goimports succeeded
+    :%delete _
+    call setline(1, split(l:output, "\n"))
+
+    " Restore the cursor and window view
+    call winrestview(l:view)
+  else
+    " Show error message
+    echohl ErrorMsg
+    echom "goimports failed:"
+    for line in split(l:output, "\n")
+        echom line
+    endfor
+    echom ""
+    echohl None
+  endif
 endfunction
 
 function! GoFunctionTop()
@@ -103,6 +128,7 @@ Plug 'https://github.com/w0ng/vim-hybrid'
 
 " Miscellanous
 Plug 'https://tpope.io/vim/commentary.git' " Commenting
+Plug 'https://github.com/gcmt/taboo.vim' " Rename tabs
 
 " Initialize plugin system
 " - Automatically executes `filetype plugin indent on` and `syntax enable`.
@@ -114,10 +140,10 @@ call plug#end()
 filetype indent off
 
 " Set the color scheme
-"colorscheme alduin
+colorscheme alduin
 "colorscheme gotham256
 "colorscheme despacio
-colorscheme hybrid
+"colorscheme hybrid
 
 source ~/.config/nvim/syntax/mine.vim
 
