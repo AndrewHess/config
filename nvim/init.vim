@@ -31,6 +31,7 @@ autocmd BufRead,BufNewFile *.mine set filetype=mine
 :set history=1000
 :set ignorecase
 :set termguicolors
+:set listchars=tab:>-,space:.
 
 let mapleader = "f"
 
@@ -49,7 +50,7 @@ nnoremap <leader>f f
 nnoremap <leader>h :noh<CR>
 nnoremap <leader>o :norm o<ESC>0d$
 nnoremap <leader>O O<ESC>0d$
-nnoremap <leader>w :w<CR>
+nnoremap <leader>w :set list!<CR>
 nnoremap <leader>a :call ToggleTabs()<CR>
 
 nnoremap <leader>1 1gt
