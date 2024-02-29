@@ -7,6 +7,7 @@ set runtimepath+=~/.config/nvim/pack/gtd
 set tabstop=4 softtabstop=0 expandtab shiftwidth=4 smarttab
 autocmd FileType make setlocal noexpandtab tabstop=4 shiftwidth=4
 autocmd FileType yaml setlocal shiftwidth=2 softtabstop=2 expandtab
+autocmd TabLeave * let g:lasttab = tabpagenr()
 
 " Run goimports when saving a .go file
 augroup goimports
@@ -34,7 +35,7 @@ autocmd BufRead,BufNewFile *.mine set filetype=mine
 let mapleader = "f"
 
 " Rebind keys
-nnoremap <C-]> :call ReloadTags()<CR><C-]>z<CR>
+nnoremap <C-]> :call ReloadTags()<CR>g<C-]>
 inoremap kj <ESC>
 
 " Custom commands
@@ -49,9 +50,20 @@ nnoremap <leader>h :noh<CR>
 nnoremap <leader>o :norm o<ESC>0d$
 nnoremap <leader>O O<ESC>0d$
 nnoremap <leader>w :w<CR>
+nnoremap <leader>a :call ToggleTabs()<CR>
+
+nnoremap <leader>1 1gt
+nnoremap <leader>2 2gt
+nnoremap <leader>3 3gt
+nnoremap <leader>4 4gt
+nnoremap <leader>5 5gt
+nnoremap <leader>6 6gt
+nnoremap <leader>7 7gt
+nnoremap <leader>8 8gt
+nnoremap <leader>9 9gt
 
 function! ReloadTags()
-    :silent! !gotags -R **/*.go > .tags
+    :silent! !gotags -R . > .tags
 endfunction
 
 
@@ -97,6 +109,14 @@ function! GoFunctionTop()
 endfunction
 
 
+" Toggle tabs
+let g:lasttab = 1
+function! ToggleTabs()
+    let l:currenttab = tabpagenr()
+    exec "tabn " . g:lasttab
+    let g:lasttab = l:currenttab
+endfunction
+
 " Use vim-plug for plugins
 call plug#begin()
 " The default plugin directory will be as follows:
@@ -140,10 +160,29 @@ call plug#end()
 filetype indent off
 
 " Set the color scheme
-colorscheme alduin
+"colorscheme alduin
 "colorscheme gotham256
 "colorscheme despacio
-"colorscheme hybrid
+colorscheme hybrid
 
 source ~/.config/nvim/syntax/mine.vim
 
+lua << EOF
+require('telescope').setup{
+  defaults = {
+    layout_strategy = 'horizontal',
+    layout_config = {
+      horizontal = {
+        width = 0.9,
+        height = 0.9,
+        preview_width = 0.6,
+      },
+      vertical = {
+        width = 0.9,
+        height = 0.9,
+        preview_height = 0.5,
+      },
+    },
+  },
+}
+EOF
