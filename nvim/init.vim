@@ -38,12 +38,15 @@ let mapleader = "f"
 " Rebind keys
 nnoremap <C-]> :call ReloadTags()<CR>g<C-]>
 inoremap kj <ESC>
+inoremap <C-k>ok <C-v>u2610
 
 " Custom commands
 nnoremap <leader>l :call ReloadTags()<CR>
 nnoremap <leader>t <cmd>lua require('telescope.builtin').find_files()<CR>
 nnoremap <leader>g <cmd>lua require('telescope.builtin').live_grep()<CR>
-nnoremap <leader>m yiw:Telescope live_grep<CR><C-r>"<ESC>
+nnoremap <leader>mm yiw:Telescope live_grep<CR><C-r>"<ESC>
+nnoremap <leader>mh :set makeprg=go\ build\ cmd/sigscalr/main.go<CR>:make<CR>
+nnoremap <leader>ms :set makeprg=go\ build\ cmd/siglens/main.go<CR>:make<CR>
 nnoremap <leader>d :lua require('gtd.view_manager').show_views_list()<CR>
 nnoremap <leader>T :call GoFunctionTop()<CR>
 nnoremap <leader>f f
@@ -52,6 +55,9 @@ nnoremap <leader>o :norm o<ESC>0d$
 nnoremap <leader>O O<ESC>0d$
 nnoremap <leader>w :set list!<CR>
 nnoremap <leader>a :call ToggleTabs()<CR>
+nnoremap <leader>e :e %:h<CR>
+nnoremap <leader>] :tab split<CR>:call ReloadTags()<CR>g<C-]>
+" nnoremap <leader>] :tab split<CR>:exec("tag ".expand("<cword>"))<CR>
 
 nnoremap <leader>1 1gt
 nnoremap <leader>2 2gt
@@ -146,6 +152,7 @@ Plug 'whatyouhide/vim-gotham'
 Plug 'https://github.com/AlessandroYorba/Alduin'
 Plug 'https://github.com/AlessandroYorba/Despacio'
 Plug 'https://github.com/w0ng/vim-hybrid'
+Plug 'https://github.com/haishanh/night-owl.vim'
 
 " Miscellanous
 Plug 'https://tpope.io/vim/commentary.git' " Commenting
@@ -171,6 +178,16 @@ source ~/.config/nvim/syntax/mine.vim
 lua << EOF
 require('telescope').setup{
   defaults = {
+    vimgrep_arguments = {
+        'rg',
+        '--color=never',
+        '--no-heading',
+        '--with-filename',
+        '--line-number',
+        '--column',
+        '--smart-case',
+        '--no-ignore', -- Don't check .gitignore; just search everything
+    },
     layout_strategy = 'horizontal',
     layout_config = {
       horizontal = {
@@ -187,3 +204,8 @@ require('telescope').setup{
   },
 }
 EOF
+
+let g:copilot_filetypes = {
+    \ 'yaml': v:true,
+    \ 'markdown': v:true,
+\ }
