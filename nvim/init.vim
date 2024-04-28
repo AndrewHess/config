@@ -19,6 +19,7 @@ augroup END
 " Activate syntax highlighting
 autocmd BufRead,BufNewFile *.peg set filetype=pigeon
 autocmd BufRead,BufNewFile *.mine set filetype=mine
+autocmd BufRead,BufNewFile *.tpl set filetype=yaml
 
 :syntax on
 :set ruler
@@ -44,6 +45,7 @@ inoremap <C-k>ok <C-v>u2610
 nnoremap <leader>l :call ReloadTags()<CR>
 nnoremap <leader>t <cmd>lua require('telescope.builtin').find_files()<CR>
 nnoremap <leader>g <cmd>lua require('telescope.builtin').live_grep()<CR>
+nnoremap <leader>r :Telescope resume<CR><ESC>
 nnoremap <leader>mm yiw:Telescope live_grep<CR><C-r>"<ESC>
 nnoremap <leader>mh :set makeprg=go\ build\ cmd/sigscalr/main.go<CR>:make<CR>
 nnoremap <leader>ms :set makeprg=go\ build\ cmd/siglens/main.go<CR>:make<CR>
@@ -186,8 +188,8 @@ require('telescope').setup{
         '--line-number',
         '--column',
         '--smart-case',
-        '--no-ignore', -- Don't check .gitignore; just search everything
     },
+    ignore_patterns = { "*.log" },
     layout_strategy = 'horizontal',
     layout_config = {
       horizontal = {
