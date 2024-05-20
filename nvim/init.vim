@@ -9,17 +9,16 @@ autocmd FileType make setlocal noexpandtab tabstop=4 shiftwidth=4
 autocmd FileType yaml setlocal shiftwidth=2 softtabstop=2 expandtab
 autocmd TabLeave * let g:lasttab = tabpagenr()
 
-" Run goimports when saving a .go file
-augroup goimports
-    autocmd!
-    autocmd BufWritePre *.go execute 'call GoImports()'
-augroup END
+" Enable Go auto-formatting on save
+let g:go_fmt_command = "goimports"
 
 
 " Activate syntax highlighting
 autocmd BufRead,BufNewFile *.peg set filetype=pigeon
 autocmd BufRead,BufNewFile *.mine set filetype=mine
 autocmd BufRead,BufNewFile *.tpl set filetype=yaml
+
+filetype plugin indent on
 
 :syntax on
 :set ruler
@@ -59,7 +58,13 @@ nnoremap <leader>w :set list!<CR>
 nnoremap <leader>a :call ToggleTabs()<CR>
 nnoremap <leader>e :e %:h<CR>
 nnoremap <leader>] :tab split<CR>:call ReloadTags()<CR>g<C-]>
-" nnoremap <leader>] :tab split<CR>:exec("tag ".expand("<cword>"))<CR>
+nnoremap <leader>j :cn<CR>
+nnoremap <leader>J :cp<CR>
+nnoremap <leader>k V$%
+nnoremap <silent><leader>b :call ToggleBoolean()<CR>
+nnoremap <leader>wl :tabe ~/gtd/item188.gtd<CR>:TabooRename scratch<CR>:tabe ~/gtd/item186.gtd<CR>:TabooRename work log<CR>
+nnoremap <leader>nn ?^func<CR>f(b:noh<CR>
+nnoremap <leader>s F(b
 
 nnoremap <leader>1 1gt
 nnoremap <leader>2 2gt
@@ -73,36 +78,6 @@ nnoremap <leader>9 9gt
 
 function! ReloadTags()
     :silent! !gotags -R . > .tags
-endfunction
-
-
-function! GoImports()
-  let l:view = winsaveview()
-
-  " Save the current buffer content in a variable
-  let l:current_buffer = join(getline(1, '$'), "\n")
-
-  " Run goimports and capture the output
-  let l:output = system('goimports', l:current_buffer)
-
-  " Check if goimports succeeded
-  if v:shell_error == 0
-    " Replace buffer content only if goimports succeeded
-    :%delete _
-    call setline(1, split(l:output, "\n"))
-
-    " Restore the cursor and window view
-    call winrestview(l:view)
-  else
-    " Show error message
-    echohl ErrorMsg
-    echom "goimports failed:"
-    for line in split(l:output, "\n")
-        echom line
-    endfor
-    echom ""
-    echohl None
-  endif
 endfunction
 
 function! GoFunctionTop()
@@ -124,6 +99,19 @@ function! ToggleTabs()
     let l:currenttab = tabpagenr()
     exec "tabn " . g:lasttab
     let g:lasttab = l:currenttab
+endfunction
+
+function! ToggleBoolean()
+    let wordUnderCursor = expand('<cword>')
+    if wordUnderCursor == 'true'
+        execute "normal ciwfalse"
+    elseif wordUnderCursor == 'True'
+        execute "normal ciwFalse"
+    elseif wordUnderCursor == 'false'
+        execute "normal ciwtrue"
+    elseif wordUnderCursor == 'False'
+        execute "normal ciwTrue"
+    endif
 endfunction
 
 " Use vim-plug for plugins
@@ -149,12 +137,17 @@ Plug 'shortcuts/no-neck-pain.nvim', { 'tag': '*' }
 " Copilot
 Plug 'github/copilot.vim'
 
+" Go
+Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
+
 " Color schemes
 Plug 'whatyouhide/vim-gotham'
 Plug 'https://github.com/AlessandroYorba/Alduin'
 Plug 'https://github.com/AlessandroYorba/Despacio'
 Plug 'https://github.com/w0ng/vim-hybrid'
 Plug 'https://github.com/haishanh/night-owl.vim'
+Plug 'catppuccin/nvim', { 'as': 'catppuccin' }
+Plug 'rebelot/kanagawa.nvim', { 'as': 'kanagawa'}
 
 " Miscellanous
 Plug 'https://tpope.io/vim/commentary.git' " Commenting
@@ -170,10 +163,12 @@ call plug#end()
 filetype indent off
 
 " Set the color scheme
-"colorscheme alduin
-"colorscheme gotham256
-"colorscheme despacio
-colorscheme hybrid
+" colorscheme alduin
+" colorscheme gotham256
+" colorscheme despacio
+" colorscheme hybrid
+colorscheme catppuccin
+" colorscheme kanagawa
 
 source ~/.config/nvim/syntax/mine.vim
 

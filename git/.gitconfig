@@ -4,7 +4,6 @@
 [pull]
     rebase = true
 [alias]
-    qlog = log -n 4 --oneline
     tree = log --all --decorate --oneline --graph
     tre  = tree -n 10
 [credential]
