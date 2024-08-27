@@ -4,6 +4,7 @@ let &packpath = &runtimepath
 " Custom plugins
 set runtimepath+=~/.config/nvim/pack/gtd
 
+let mapleader = "f"
 set tabstop=4 softtabstop=0 expandtab shiftwidth=4 smarttab
 autocmd FileType make setlocal noexpandtab tabstop=4 shiftwidth=4
 autocmd FileType yaml setlocal shiftwidth=2 softtabstop=2 expandtab
@@ -17,6 +18,17 @@ let g:go_fmt_command = "goimports"
 autocmd BufRead,BufNewFile *.peg set filetype=pigeon
 autocmd BufRead,BufNewFile *.mine set filetype=mine
 autocmd BufRead,BufNewFile *.tpl set filetype=yaml
+
+" Language Server Protocol
+augroup lsp
+  au!
+  au FileType go lua vim.api.nvim_buf_set_keymap(0, 'n', '<leader>jr', '<cmd>lua vim.lsp.buf.rename()<CR>', {noremap=true, silent=true})
+  au FileType go lua vim.api.nvim_buf_set_keymap(0, 'n', '<leader>ja', '<cmd>lua vim.lsp.buf.code_action()<CR>', {noremap=true, silent=true})
+  au FileType go lua vim.api.nvim_buf_set_keymap(0, 'n', '<leader>jt', '<cmd>lua vim.lsp.buf.type_definition()<CR>', {noremap=true, silent=true})
+  au FileType go lua vim.api.nvim_buf_set_keymap(0, 'n', '<leader>jd', '<cmd>lua vim.lsp.buf.definition()<CR>', {noremap=true, silent=true})
+  au FileType go lua vim.api.nvim_buf_set_keymap(0, 'n', '<leader>jf', '<cmd>lua vim.lsp.buf.references()<CR>', {noremap=true, silent=true})
+  au FileType go lua vim.api.nvim_buf_set_keymap(0, 'n', '<leader>jh', '<cmd>lua telescope_lsp_references()<CR>', {noremap=true, silent=true})
+augroup END
 
 filetype plugin indent on
 
@@ -32,8 +44,7 @@ filetype plugin indent on
 :set ignorecase
 :set termguicolors
 :set listchars=tab:>-,space:.
-
-let mapleader = "f"
+:set showtabline=2 " Always show tabs
 
 " Rebind keys
 nnoremap <C-]> :call ReloadTags()<CR>g<C-]>
@@ -58,13 +69,18 @@ nnoremap <leader>w :set list!<CR>
 nnoremap <leader>a :call ToggleTabs()<CR>
 nnoremap <leader>e :e %:h<CR>
 nnoremap <leader>] :tab split<CR>:call ReloadTags()<CR>g<C-]>
-nnoremap <leader>j :cn<CR>
-nnoremap <leader>J :cp<CR>
 nnoremap <leader>k V$%
 nnoremap <silent><leader>b :call ToggleBoolean()<CR>
-nnoremap <leader>wl :tabe ~/gtd/item188.gtd<CR>:TabooRename scratch<CR>:tabe ~/gtd/item186.gtd<CR>:TabooRename work log<CR>
-nnoremap <leader>nn ?^func<CR>f(b:noh<CR>
+" nnoremap <leader>wl :tabe ~/gtd/item210.gtd<CR>:TabooRename PT<CR>:tabe ~/gtd/item188.gtd<CR>:TabooRename scratch<CR>:tabe ~/gtd/item186.gtd<CR>:TabooRename work log<CR>
+nnoremap <leader>nn :call search('^func \(([^)]\+) \)\?.', 'bWe')<CR>
 nnoremap <leader>s F(b
+nnoremap <leader>ix 1z=
+nnoremap <leader>p viwpyiw
+nnoremap <leader>v :!go test -v ./%:h -count=1<CR>
+nnoremap <leader>ml :execute '!git blame -L ' . line('w0') . ',' . line('w$') . ' %:p'<CR>
+nnoremap <leader>now :put =strftime('%Y-%m-%d %H:%M:%S')<CR>A 
+nnoremap <leader>q :q<CR>
+nnoremap <leader>unc :call search('^func \_.\{-} {', 'We')<CR>
 
 nnoremap <leader>1 1gt
 nnoremap <leader>2 2gt
@@ -75,6 +91,9 @@ nnoremap <leader>6 6gt
 nnoremap <leader>7 7gt
 nnoremap <leader>8 8gt
 nnoremap <leader>9 9gt
+
+nnoremap <silent> [q :cprevious<CR>zz
+nnoremap <silent> ]q :cnext<CR>zz
 
 function! ReloadTags()
     :silent! !gotags -R . > .tags
@@ -94,7 +113,9 @@ endfunction
 
 
 " Toggle tabs
-let g:lasttab = 1
+if !exists('g:lasttab')
+    let g:lasttab = 1
+endif
 function! ToggleTabs()
     let l:currenttab = tabpagenr()
     exec "tabn " . g:lasttab
@@ -130,6 +151,17 @@ call plug#begin()
 Plug 'nvim-lua/plenary.nvim'
 Plug 'nvim-treesitter/nvim-treesitter'
 Plug 'nvim-telescope/telescope.nvim', { 'tag': '0.1.x' }
+
+" Octo plugin and its dependencies, for PRs
+Plug 'pwntester/octo.nvim'
+Plug 'nvim-lua/plenary.nvim'
+Plug 'nvim-tree/nvim-web-devicons'
+
+" LSP
+Plug 'neovim/nvim-lspconfig'
+
+" Fugitive
+Plug 'tpope/vim-fugitive'
 
 " no-neck-pain for centering windows
 Plug 'shortcuts/no-neck-pain.nvim', { 'tag': '*' }
@@ -200,6 +232,26 @@ require('telescope').setup{
     },
   },
 }
+EOF
+
+lua << EOF
+require("octo").setup({
+  suppress_missing_scope = {
+    projects_v2 = true,
+  },
+  enable_builtin = true,
+})
+EOF
+
+lua << EOF
+require('lspconfig').gopls.setup({})
+
+function telescope_lsp_references()
+  require('telescope.builtin').lsp_references({
+    include_declaration = true,
+    show_line = false,
+  })
+end
 EOF
 
 let g:copilot_filetypes = {
