@@ -52,13 +52,14 @@ inoremap kj <ESC>
 inoremap <C-k>ok <C-v>u2610
 
 " Custom commands
-nnoremap <leader>l :call ReloadTags()<CR>
 nnoremap <leader>t <cmd>lua require('telescope.builtin').find_files()<CR>
 nnoremap <leader>g <cmd>lua require('telescope.builtin').live_grep()<CR>
 nnoremap <leader>r :Telescope resume<CR><ESC>
 nnoremap <leader>mm yiw:Telescope live_grep<CR><C-r>"<ESC>
-nnoremap <leader>mh :set makeprg=go\ build\ cmd/sigscalr/main.go<CR>:make<CR>
-nnoremap <leader>ms :set makeprg=go\ build\ cmd/siglens/main.go<CR>:make<CR>
+nnoremap <leader>mh :set makeprg=go\ vet\ cmd/sigscalr/main.go<CR>:make<CR>
+nnoremap <leader>ms :set makeprg=go\ vet\ cmd/siglens/main.go<CR>:make<CR>
+" nnoremap <leader>mh :!go vet cmd/sigscalr/main.go<CR>
+" nnoremap <leader>ms :!go vet cmd/siglens/main.go<CR>
 nnoremap <leader>d :lua require('gtd.view_manager').show_views_list()<CR>
 nnoremap <leader>T :call GoFunctionTop()<CR>
 nnoremap <leader>f f
@@ -67,9 +68,9 @@ nnoremap <leader>o :norm o<ESC>0d$
 nnoremap <leader>O O<ESC>0d$
 nnoremap <leader>w :set list!<CR>
 nnoremap <leader>a :call ToggleTabs()<CR>
-nnoremap <leader>e :e %:h<CR>
+nnoremap <leader>ej :e %:h<CR>
 nnoremap <leader>] :tab split<CR>:call ReloadTags()<CR>g<C-]>
-nnoremap <leader>k V$%
+nnoremap <leader>k :ccl<CR>
 nnoremap <silent><leader>b :call ToggleBoolean()<CR>
 " nnoremap <leader>wl :tabe ~/gtd/item210.gtd<CR>:TabooRename PT<CR>:tabe ~/gtd/item188.gtd<CR>:TabooRename scratch<CR>:tabe ~/gtd/item186.gtd<CR>:TabooRename work log<CR>
 nnoremap <leader>nn :call search('^func \(([^)]\+) \)\?.', 'bWe')<CR>
@@ -79,8 +80,17 @@ nnoremap <leader>p viwpyiw
 nnoremap <leader>v :!go test -v ./%:h -count=1<CR>
 nnoremap <leader>ml :execute '!git blame -L ' . line('w0') . ',' . line('w$') . ' %:p'<CR>
 nnoremap <leader>now :put =strftime('%Y-%m-%d %H:%M:%S')<CR>A 
+nnoremap <leader>noww :put =strftime('%Y-%m-%d %H:%M:%S')<CR>A Work<ESC>zz:w<CR>
+nnoremap <leader>nowd :put =strftime('%Y-%m-%d %H:%M:%S')<CR>A Work.Deep<ESC>zz:w<CR>
+nnoremap <leader>nowr :put =strftime('%Y-%m-%d %H:%M:%S')<CR>A Work.Review<ESC>zz:w<CR>
+nnoremap <leader>nowp :put =strftime('%Y-%m-%d %H:%M:%S')<CR>A Work.Prep<ESC>zz:w<CR>
+nnoremap <leader>nowb :put =strftime('%Y-%m-%d %H:%M:%S')<CR>A Break<ESC>zz:w<CR>
+nnoremap <leader>nowe :put =strftime('%Y-%m-%d %H:%M:%S')<CR>A Done<ESC>zz:w<CR>
 nnoremap <leader>q :q<CR>
 nnoremap <leader>unc :call search('^func \_.\{-} {', 'We')<CR>
+nnoremap <leader>ent o<TAB>toputils.SigDebugEnter("andrew")<CR>defer toputils.SigDebugExit(nil)<CR><ESC>
+nnoremap <leader>util otoputils "github.com/siglens/siglens/pkg/utils"<ESC>
+nnoremap <leader>l o- [ ] 
 
 nnoremap <leader>1 1gt
 nnoremap <leader>2 2gt
@@ -98,6 +108,7 @@ nnoremap <silent> ]q :cnext<CR>zz
 function! ReloadTags()
     :silent! !gotags -R . > .tags
 endfunction
+
 
 function! GoFunctionTop()
     let current_pos = getpos(".")
@@ -184,6 +195,7 @@ Plug 'rebelot/kanagawa.nvim', { 'as': 'kanagawa'}
 " Miscellanous
 Plug 'https://tpope.io/vim/commentary.git' " Commenting
 Plug 'https://github.com/gcmt/taboo.vim' " Rename tabs
+Plug 'dhruvasagar/vim-zoom'
 
 " Initialize plugin system
 " - Automatically executes `filetype plugin indent on` and `syntax enable`.
