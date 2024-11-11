@@ -26,8 +26,15 @@ augroup lsp
   au FileType go lua vim.api.nvim_buf_set_keymap(0, 'n', '<leader>ja', '<cmd>lua vim.lsp.buf.code_action()<CR>', {noremap=true, silent=true})
   au FileType go lua vim.api.nvim_buf_set_keymap(0, 'n', '<leader>jt', '<cmd>lua vim.lsp.buf.type_definition()<CR>', {noremap=true, silent=true})
   au FileType go lua vim.api.nvim_buf_set_keymap(0, 'n', '<leader>jd', '<cmd>lua vim.lsp.buf.definition()<CR>', {noremap=true, silent=true})
-  au FileType go lua vim.api.nvim_buf_set_keymap(0, 'n', '<leader>jf', '<cmd>lua vim.lsp.buf.references()<CR>', {noremap=true, silent=true})
   au FileType go lua vim.api.nvim_buf_set_keymap(0, 'n', '<leader>jh', '<cmd>lua telescope_lsp_references()<CR>', {noremap=true, silent=true})
+  au FileType go lua vim.api.nvim_buf_set_keymap(0, 'n', '<leader>jf', '<cmd>lua references_preserve_view()<CR>', {noremap=true, silent=true})
+augroup END
+  " au FileType go lua vim.api.nvim_buf_set_keymap(0, 'n', '<leader>jf', '<cmd>lua vim.lsp.buf.references()<CR>', {noremap=true, silent=true})
+
+" Save server.yaml without a newline.
+augroup ServerYamlEOL
+  autocmd!
+  autocmd BufWritePre server.yaml setlocal noendofline nofixendofline
 augroup END
 
 filetype plugin indent on
@@ -58,8 +65,6 @@ nnoremap <leader>r :Telescope resume<CR><ESC>
 nnoremap <leader>mm yiw:Telescope live_grep<CR><C-r>"<ESC>
 nnoremap <leader>mh :set makeprg=go\ vet\ cmd/sigscalr/main.go<CR>:make<CR>
 nnoremap <leader>ms :set makeprg=go\ vet\ cmd/siglens/main.go<CR>:make<CR>
-" nnoremap <leader>mh :!go vet cmd/sigscalr/main.go<CR>
-" nnoremap <leader>ms :!go vet cmd/siglens/main.go<CR>
 nnoremap <leader>d :lua require('gtd.view_manager').show_views_list()<CR>
 nnoremap <leader>T :call GoFunctionTop()<CR>
 nnoremap <leader>f f
@@ -70,15 +75,14 @@ nnoremap <leader>w :set list!<CR>
 nnoremap <leader>a :call ToggleTabs()<CR>
 nnoremap <leader>ej :e %:h<CR>
 nnoremap <leader>] :tab split<CR>:call ReloadTags()<CR>g<C-]>
-nnoremap <leader>k :ccl<CR>
+nnoremap <leader>k :call CloseQuickfixPreserveMainView()<CR>
 nnoremap <silent><leader>b :call ToggleBoolean()<CR>
-" nnoremap <leader>wl :tabe ~/gtd/item210.gtd<CR>:TabooRename PT<CR>:tabe ~/gtd/item188.gtd<CR>:TabooRename scratch<CR>:tabe ~/gtd/item186.gtd<CR>:TabooRename work log<CR>
 nnoremap <leader>nn :call search('^func \(([^)]\+) \)\?.', 'bWe')<CR>
 nnoremap <leader>s F(b
 nnoremap <leader>ix 1z=
 nnoremap <leader>p viwpyiw
 nnoremap <leader>v :!go test -v ./%:h -count=1<CR>
-nnoremap <leader>ml :execute '!git blame -L ' . line('w0') . ',' . line('w$') . ' %:p'<CR>
+nnoremap <leader>ml :Gitsigns blame<CR>
 nnoremap <leader>now :put =strftime('%Y-%m-%d %H:%M:%S')<CR>A 
 nnoremap <leader>noww :put =strftime('%Y-%m-%d %H:%M:%S')<CR>A Work<ESC>zz:w<CR>
 nnoremap <leader>nowd :put =strftime('%Y-%m-%d %H:%M:%S')<CR>A Work.Deep<ESC>zz:w<CR>
@@ -91,6 +95,7 @@ nnoremap <leader>unc :call search('^func \_.\{-} {', 'We')<CR>
 nnoremap <leader>ent o<TAB>toputils.SigDebugEnter("andrew")<CR>defer toputils.SigDebugExit(nil)<CR><ESC>
 nnoremap <leader>util otoputils "github.com/siglens/siglens/pkg/utils"<ESC>
 nnoremap <leader>l o- [ ] 
+nnoremap <leader>jsp :setlocal spell! spelllang=en_us<CR>:sleep 300m<CR>:setlocal nospell<CR>
 
 nnoremap <leader>1 1gt
 nnoremap <leader>2 2gt
@@ -122,6 +127,35 @@ function! GoFunctionTop()
     call setpos('.', current_pos)
 endfunction
 
+function! CloseQuickfixPreserveMainView()
+    " Initialize a variable to store the main window number
+    let l:main_win = -1
+
+    " Iterate through all windows to find the main window (not quickfix)
+    for win in range(1, winnr('$'))
+        if getwinvar(win, '&buftype') !=# 'quickfix'
+            let l:main_win = win
+            break
+        endif
+    endfor
+
+    " If a main window is found
+    if l:main_win !=# -1
+        " Save the view of the main window
+        call win_gotoid(win_getid(l:main_win))
+        let l:view = winsaveview()
+
+        " Close the quickfix window
+        cclose
+
+        " Restore the view of the main window
+        call win_gotoid(win_getid(l:main_win))
+        call winrestview(l:view)
+    else
+        " Fallback: just close the quickfix window
+        cclose
+    endif
+endfunction
 
 " Toggle tabs
 if !exists('g:lasttab')
@@ -196,6 +230,7 @@ Plug 'rebelot/kanagawa.nvim', { 'as': 'kanagawa'}
 Plug 'https://tpope.io/vim/commentary.git' " Commenting
 Plug 'https://github.com/gcmt/taboo.vim' " Rename tabs
 Plug 'dhruvasagar/vim-zoom'
+Plug 'lewis6991/gitsigns.nvim' " Git staged/unstaged changes
 
 " Initialize plugin system
 " - Automatically executes `filetype plugin indent on` and `syntax enable`.
@@ -256,6 +291,10 @@ require("octo").setup({
 EOF
 
 lua << EOF
+require('gitsigns').setup()
+EOF
+
+lua << EOF
 require('lspconfig').gopls.setup({})
 
 function telescope_lsp_references()
@@ -263,6 +302,37 @@ function telescope_lsp_references()
     include_declaration = true,
     show_line = false,
   })
+end
+
+function references_preserve_view()
+    -- Identify the main code window (not a quickfix window)
+    local main_win = nil
+    for _, win in ipairs(vim.api.nvim_list_wins()) do
+        local buftype = vim.api.nvim_buf_get_option(vim.api.nvim_win_get_buf(win), 'buftype')
+        if buftype ~= 'quickfix' then
+            main_win = win
+            break
+        end
+    end
+
+    if main_win then
+        -- Save the current view of the main window
+        local view = vim.api.nvim_win_call(main_win, function()
+            return vim.fn.winsaveview()
+        end)
+
+        -- Open references
+        vim.lsp.buf.references()
+
+        -- Restore the view after a short delay
+        vim.defer_fn(function()
+            vim.api.nvim_win_call(main_win, function()
+                vim.fn.winrestview(view)
+            end)
+        end, 100)
+    else
+        vim.lsp.buf.references()
+    end
 end
 EOF
 
