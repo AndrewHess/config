@@ -96,6 +96,10 @@ nnoremap <leader>ent o<TAB>toputils.SigDebugEnter("andrew")<CR>defer toputils.Si
 nnoremap <leader>util otoputils "github.com/siglens/siglens/pkg/utils"<ESC>
 nnoremap <leader>l o- [ ] 
 nnoremap <leader>jsp :setlocal spell! spelllang=en_us<CR>:sleep 300m<CR>:setlocal nospell<CR>
+nnoremap <leader>- :tabmove -<CR>
+nnoremap <leader>+ :tabmove +<CR>
+nnoremap <leader>= :tabmove +<CR>
+nnoremap <leader>jp :g/^func/p<CR>
 
 nnoremap <leader>1 1gt
 nnoremap <leader>2 2gt

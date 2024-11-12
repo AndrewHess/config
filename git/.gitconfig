@@ -3,11 +3,16 @@
     email = andrew7hess@gmail.com
 [pull]
     rebase = true
+[credential]
+    helper = osxkeychain
 [alias]
     tree = log --all --decorate --oneline --graph
     tre  = tree -n 10
-[credential]
-    helper = osxkeychain
+    s    = status
+    d    = diff
+    ch   = checkout
+    updev = !git fetch upstream && git checkout develop && git merge upstream/develop && git checkout -
+    ordev = !git fetch origin && git checkout develop && git merge origin/develop && git checkout -
 [init]
     defaultBranch = main
 [http]
