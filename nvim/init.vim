@@ -65,6 +65,7 @@ nnoremap <leader>r :Telescope resume<CR><ESC>
 nnoremap <leader>mm yiw:Telescope live_grep<CR><C-r>"<ESC>
 nnoremap <leader>mh :set makeprg=go\ vet\ cmd/sigscalr/main.go<CR>:make<CR>
 nnoremap <leader>ms :set makeprg=go\ vet\ cmd/siglens/main.go<CR>:make<CR>
+nnoremap <leader>mf :set makeprg=make\ lint<CR>:make<CR>
 nnoremap <leader>d :lua require('gtd.view_manager').show_views_list()<CR>
 nnoremap <leader>T :call GoFunctionTop()<CR>
 nnoremap <leader>f f
@@ -81,7 +82,7 @@ nnoremap <leader>nn :call search('^func \(([^)]\+) \)\?.', 'bWe')<CR>
 nnoremap <leader>s F(b
 nnoremap <leader>ix 1z=
 nnoremap <leader>p viwpyiw
-nnoremap <leader>v :!go test -v ./%:h -count=1<CR>
+nnoremap <leader>v :terminal go test -v ./%:h -count=1<CR>G
 nnoremap <leader>ml :Gitsigns blame<CR>
 nnoremap <leader>now :put =strftime('%Y-%m-%d %H:%M:%S')<CR>A 
 nnoremap <leader>noww :put =strftime('%Y-%m-%d %H:%M:%S')<CR>A Work<ESC>zz:w<CR>
@@ -94,12 +95,13 @@ nnoremap <leader>q :q<CR>
 nnoremap <leader>unc :call search('^func \_.\{-} {', 'We')<CR>
 nnoremap <leader>ent o<TAB>toputils.SigDebugEnter("andrew")<CR>defer toputils.SigDebugExit(nil)<CR><ESC>
 nnoremap <leader>util otoputils "github.com/siglens/siglens/pkg/utils"<ESC>
-nnoremap <leader>l o- [ ] 
+nnoremap <leader>l :b#<CR>
 nnoremap <leader>jsp :setlocal spell! spelllang=en_us<CR>:sleep 300m<CR>:setlocal nospell<CR>
 nnoremap <leader>- :tabmove -<CR>
 nnoremap <leader>+ :tabmove +<CR>
 nnoremap <leader>= :tabmove +<CR>
 nnoremap <leader>jp :g/^func/p<CR>
+nnoremap <leader>jk :split ~/.teleport/scratch<CR>
 
 nnoremap <leader>1 1gt
 nnoremap <leader>2 2gt
