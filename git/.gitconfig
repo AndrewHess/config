@@ -1,21 +1,33 @@
 [user]
-    name = Andrew Hess
-    email = andrew7hess@gmail.com
+  name = Andrew Hess
+  email = andrew7hess@gmail.com
 [pull]
-    rebase = true
-[credential]
-    helper = osxkeychain
+  rebase = true
 [alias]
-    tree = log --all --decorate --oneline --graph
-    tre  = tree -n 10
-    s    = status
-    d    = diff
-    ch   = checkout
-    updev = !git fetch upstream && git checkout develop && git merge upstream/develop && git checkout -
-    ordev = !git fetch origin && git checkout develop && git merge origin/develop && git checkout -
+  qlog = log -n 4 --oneline
+  tree = log --all --decorate --oneline --graph
+  tre  = tree -n 15
+  s = status
+  d = diff
+  ch = checkout
+  diffdev = diff --merge-base develop
+  olddiffdev = "!f() { git diff $(git merge-base $1 develop) $1; }; f"
+  updev = !git checkout develop && git fetch upstream && git merge upstream/develop && git checkout -
+  ordev = !git checkout develop && git fetch origin && git merge origin/develop && git checkout -
+  sdiff = !git diff && git submodule foreach 'git diff'
+  fixup = commit --amend --no-edit
+  ds = diff --staged
+[credential]
+  helper = osxkeychain
 [init]
-    defaultBranch = main
+  defaultBranch = main
 [http]
-    postBuffer = 104857600
+  postBuffer = 104857600
 [core]
-    editor = vim
+  excludesFile = ~/.gitignore
+  editor = nvim
+  pager = delta
+[delta]
+  line-numbers = true
+[interactive]
+  diffFilter = delta --color-only
