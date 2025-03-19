@@ -27,6 +27,9 @@ vim.opt.termguicolors = true
 vim.opt.listchars = { tab = ">-", space = "." }
 vim.opt.showtabline = 2
 
+-- Fix for build tags
+vim.g.go_build_tags = 'e2e_all'
+
 -- Bootstrap lazy.nvim
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
@@ -80,18 +83,28 @@ require("lazy").setup({
         timeout = 2000,
       },
       quickfile = { enabled = true },
-      scroll = {
-        animate = {
-          duration = { step = 15, total = 75 },
-          easing = "linear",
-        },
-        -- what buffers to animate
-        filter = function(buf)
-          return vim.g.snacks_scroll ~= false and vim.b[buf].snacks_scroll ~= false and vim.bo[buf].buftype ~= "terminal"
-        end,
-      },
+      -- scroll = {
+      --   animate = {
+      --     duration = { step = 100, total = 75 },
+      --     easing = "linear",
+      --   },
+      --   -- what buffers to animate
+      --   filter = function(buf)
+      --     return vim.g.snacks_scroll ~= false and vim.b[buf].snacks_scroll ~= false and vim.bo[buf].buftype ~= "terminal"
+      --   end,
+      -- },
       statuscolumn = { enabled = true },
       words = { enabled = false },
+      dim = {
+        animate = {
+          enabled = vim.fn.has("nvim-0.10") == 1,
+          easing = "outQuad",
+          duration = {
+            step = 10, -- ms per step
+            total = 100, -- maximum duration
+          },
+        },
+      },
       styles = {
         notification = {
           -- wo = { wrap = true } -- Wrap notifications
@@ -223,6 +236,7 @@ local function setup_go_lsp_mappings()
     vim.api.nvim_buf_set_keymap(0, 'n', '<leader>jd', '<cmd>lua vim.lsp.buf.definition()<CR>', opts)
     vim.api.nvim_buf_set_keymap(0, 'n', '<leader>jh', '<cmd>lua telescope_lsp_references()<CR>', opts)
     vim.api.nvim_buf_set_keymap(0, 'n', '<leader>jf', '<cmd>lua references_preserve_view()<CR>', opts)
+    vim.api.nvim_buf_set_keymap(0, 'n', '<leader>ji', '<cmd>lua vim.lsp.buf.implementation()<CR>', opts)
 end
 
 vim.api.nvim_create_autocmd("FileType", {
@@ -232,7 +246,7 @@ vim.api.nvim_create_autocmd("FileType", {
 
 -- Server.yaml EOL settings
 vim.api.nvim_create_autocmd("BufWritePre", {
-    pattern = "server.yaml",
+    pattern = {"server.yaml", "server_saas.yaml"},
     command = "setlocal noendofline nofixendofline"
 })
 
@@ -310,9 +324,11 @@ require('telescope').setup({
             '--line-number',
             '--column',
             '--smart-case',
+            '--hidden',           -- Show hidden files
         },
         file_ignore_patterns = {
             '*.log',
+            '.git/',
         },
         layout_strategy = 'horizontal',
         layout_config = {
@@ -333,7 +349,13 @@ require('telescope').setup({
 require('gitsigns').setup()
 
 -- LSP setup
-require('lspconfig').gopls.setup({})
+require('lspconfig').gopls.setup{
+  settings = {
+    gopls = {
+      buildFlags = {"-tags=e2e_all"}
+    }
+  }
+}
 
 function telescope_lsp_references()
     require('telescope.builtin').lsp_references({
@@ -376,7 +398,12 @@ vim.g.copilot_filetypes = {
 }
 
 -- Telescope bindings
-vim.keymap.set('n', '<leader>t', require('telescope.builtin').find_files)
+vim.keymap.set('n', '<leader>t', function()
+    require('telescope.builtin').find_files({
+        hidden = true,
+        no_ignore = false,
+    })
+end)
 vim.keymap.set('n', '<leader>g', require('telescope.builtin').live_grep)
 vim.keymap.set('n', '<leader>r', ':Telescope resume<CR><ESC>')
 vim.keymap.set('n', '<leader>mm', 'yiw:Telescope live_grep<CR><C-r>"<ESC>')
@@ -384,6 +411,7 @@ vim.keymap.set('n', '<leader>mm', 'yiw:Telescope live_grep<CR><C-r>"<ESC>')
 -- Make commands
 vim.keymap.set('n', '<leader>mh', ':set makeprg=go\\ vet\\ cmd/sigscalr/main.go<CR>:make<CR>')
 vim.keymap.set('n', '<leader>ms', ':set makeprg=go\\ vet\\ cmd/siglens/main.go<CR>:make<CR>')
+vim.keymap.set('n', '<leader>mc', ':set makeprg=go\\ vet\\ main.go<CR>:make<CR>')
 vim.keymap.set('n', '<leader>mf', ':set makeprg=make\\ lint<CR>:make<CR>')
 
 -- GTD and function navigation
@@ -401,29 +429,30 @@ vim.keymap.set('n', '<leader>O', 'O<ESC>0d$')
 vim.keymap.set('n', '<leader>w', ':set list!<CR>')
 vim.keymap.set('n', '<leader>a', function() ToggleTabs() end)
 vim.keymap.set('n', '<leader>ej', ':e %:h<CR>')
-vim.keymap.set('n', '<leader>]', ':tab split<CR>:call ReloadTags()<CR>g<C-]>')
+vim.api.nvim_set_keymap('n', '<leader>]', ':lua ReloadTags()<CR>g<C-]>', { noremap = true, silent = true })
 vim.keymap.set('n', '<leader>k', function() CloseQuickfixPreserveMainView() end)
 vim.keymap.set('n', '<leader>b', function() ToggleBoolean() end, { silent = true })
 vim.keymap.set('n', '<leader>nn', [[<cmd>call search('^func \(([^)]\+) \)\?.', 'bWe')<CR>]])
 vim.keymap.set('n', '<leader>s', 'F(b')
 vim.keymap.set('n', '<leader>ix', '1z=')
+vim.keymap.set('n', '<leader>;', ':tabe<CR>')
 vim.keymap.set('n', '<leader>p', 'viwpyiw')
-vim.keymap.set('n', '<leader>v', ':terminal go test -v ./%:h -count=1<CR>G')
+vim.keymap.set('n', '<leader>v', ':terminal go test -v ./%:h -count=1 -tags=e2e_all<CR>G')
 vim.keymap.set('n', '<leader>ml', ':Gitsigns blame<CR>')
 
 -- Timestamp mappings
-vim.keymap.set('n', '<leader>now', ':put =strftime("%Y-%m-%d %H:%M:%S")<CR>A ')
-vim.keymap.set('n', '<leader>noww', ':put =strftime("%Y-%m-%d %H:%M:%S")<CR>A Work<ESC>zz:w<CR>')
-vim.keymap.set('n', '<leader>nowd', ':put =strftime("%Y-%m-%d %H:%M:%S")<CR>A Work.Deep<ESC>zz:w<CR>')
-vim.keymap.set('n', '<leader>nowr', ':put =strftime("%Y-%m-%d %H:%M:%S")<CR>A Work.Review<ESC>zz:w<CR>')
-vim.keymap.set('n', '<leader>nowp', ':put =strftime("%Y-%m-%d %H:%M:%S")<CR>A Work.Prep<ESC>zz:w<CR>')
-vim.keymap.set('n', '<leader>nowb', ':put =strftime("%Y-%m-%d %H:%M:%S")<CR>A Break<ESC>zz:w<CR>')
-vim.keymap.set('n', '<leader>nowe', ':put =strftime("%Y-%m-%d %H:%M:%S")<CR>A Done<ESC>zz:w<CR>')
+vim.keymap.set('n', '<leader>now', ":put =strftime('%Y-%m-%d %H:%M:%S', localtime())<CR>A ")
+vim.keymap.set('n', '<leader>noww', ":put =strftime('%Y-%m-%d %H:%M:%S', localtime())<CR>A Work<ESC>zz:w<CR>")
+vim.keymap.set('n', '<leader>nowd', ":put =strftime('%Y-%m-%d %H:%M:%S', localtime())<CR>A Work.Deep<ESC>zz:w<CR>")
+vim.keymap.set('n', '<leader>nowr', ":put =strftime('%Y-%m-%d %H:%M:%S', localtime())<CR>A Work.Review<ESC>zz:w<CR>")
+vim.keymap.set('n', '<leader>nowp', ":put =strftime('%Y-%m-%d %H:%M:%S', localtime())<CR>A Work.Prep<ESC>zz:w<CR>")
+vim.keymap.set('n', '<leader>nowb', ":put =strftime('%Y-%m-%d %H:%M:%S', localtime())<CR>A Break<ESC>zz:w<CR>")
+vim.keymap.set('n', '<leader>nowe', ":put =strftime('%Y-%m-%d %H:%M:%S', localtime())<CR>A Done<ESC>zz:w<CR>")
 
 -- Misc mappings
 vim.keymap.set('n', '<leader>q', ':q<CR>')
 vim.keymap.set('n', '<leader>eq', 'o<ESC>^C=<C-r>=repeat("=", strlen(getline(line(".")-1))-1)<CR><CR>')
-vim.keymap.set('n', '<leader>ent', 'o<TAB>toputils.SigDebugEnter("andrew")<CR>defer toputils.SigDebugExit(nil)<CR><ESC>')
+vim.keymap.set('n', '<leader>ent', 'o<TAB>toputils.SigDebugEnter(fmt.Sprintf("andrew"))<CR>defer toputils.SigDebugExit(nil)<CR><ESC>')
 vim.keymap.set('n', '<leader>util', 'otoputils "github.com/siglens/siglens/pkg/utils"<ESC>')
 vim.keymap.set('n', '<leader>l', ':b#<CR>')
 vim.keymap.set('n', '<leader>jsp', ':setlocal spell! spelllang=en_us<CR>:sleep 300m<CR>:setlocal nospell<CR>')
@@ -439,6 +468,31 @@ vim.keymap.set('n', '<leader>jp', function()
 
     -- Execute and capture the output
     local lines = vim.api.nvim_exec2('g/^func/p', { output = true }).output
+
+    -- Display in command area
+    vim.api.nvim_echo({{lines, 'None'}}, false, {})
+
+    -- Restore position
+    vim.fn.setpos('.', current_pos)
+    vim.fn.winrestview(current_view)
+end)
+vim.keymap.set('n', '<leader>jo', function()
+    -- Save position
+    local current_pos = vim.fn.getpos('.')
+    local current_view = vim.fn.winsaveview()
+
+    -- Get word under cursor
+    local type_name = vim.fn.expand('<cword>')
+    
+    -- Search pattern for methods
+    -- Matches:
+    -- func (x TypeName)
+    -- func (x *TypeName) 
+    -- where x can be any receiver name
+    local pattern = '^func (\\([^ )]\\+ \\*\\?' .. type_name .. '\\))'
+    
+    -- Execute and capture the output
+    local lines = vim.api.nvim_exec2('g/' .. pattern .. '/p', { output = true }).output
 
     -- Display in command area
     vim.api.nvim_echo({{lines, 'None'}}, false, {})

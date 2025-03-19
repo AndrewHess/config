@@ -92,7 +92,7 @@ nnoremap <leader>nowp :put =strftime('%Y-%m-%d %H:%M:%S')<CR>A Work.Prep<ESC>zz:
 nnoremap <leader>nowb :put =strftime('%Y-%m-%d %H:%M:%S')<CR>A Break<ESC>zz:w<CR>
 nnoremap <leader>nowe :put =strftime('%Y-%m-%d %H:%M:%S')<CR>A Done<ESC>zz:w<CR>
 nnoremap <leader>q :q<CR>
-nnoremap <leader>unc :call search('^func \_.\{-} {', 'We')<CR>
+nnoremap <leader>eq o<ESC>^C=<C-r>=repeat('=', strlen(getline(line('.')-1))-1)<CR><CR>
 nnoremap <leader>ent o<TAB>toputils.SigDebugEnter("andrew")<CR>defer toputils.SigDebugExit(nil)<CR><ESC>
 nnoremap <leader>util otoputils "github.com/siglens/siglens/pkg/utils"<ESC>
 nnoremap <leader>l :b#<CR>
@@ -203,19 +203,14 @@ Plug 'nvim-lua/plenary.nvim'
 Plug 'nvim-treesitter/nvim-treesitter'
 Plug 'nvim-telescope/telescope.nvim', { 'tag': '0.1.x' }
 
-" Octo plugin and its dependencies, for PRs
-Plug 'pwntester/octo.nvim'
-Plug 'nvim-lua/plenary.nvim'
-Plug 'nvim-tree/nvim-web-devicons'
+" Several small plugins
+Plug 'folke/snacks.nvim'
 
 " LSP
 Plug 'neovim/nvim-lspconfig'
 
 " Fugitive
 Plug 'tpope/vim-fugitive'
-
-" no-neck-pain for centering windows
-Plug 'shortcuts/no-neck-pain.nvim', { 'tag': '*' }
 
 " Copilot
 Plug 'github/copilot.vim'
@@ -224,13 +219,13 @@ Plug 'github/copilot.vim'
 Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
 
 " Color schemes
-Plug 'whatyouhide/vim-gotham'
-Plug 'https://github.com/AlessandroYorba/Alduin'
-Plug 'https://github.com/AlessandroYorba/Despacio'
-Plug 'https://github.com/w0ng/vim-hybrid'
-Plug 'https://github.com/haishanh/night-owl.vim'
+" Plug 'whatyouhide/vim-gotham'
+" Plug 'https://github.com/AlessandroYorba/Alduin'
+" Plug 'https://github.com/AlessandroYorba/Despacio'
+" Plug 'https://github.com/w0ng/vim-hybrid'
+" Plug 'https://github.com/haishanh/night-owl.vim'
 Plug 'catppuccin/nvim', { 'as': 'catppuccin' }
-Plug 'rebelot/kanagawa.nvim', { 'as': 'kanagawa'}
+" Plug 'rebelot/kanagawa.nvim', { 'as': 'kanagawa'}
 
 " Miscellanous
 Plug 'https://tpope.io/vim/commentary.git' " Commenting
@@ -258,6 +253,28 @@ colorscheme catppuccin
 source ~/.config/nvim/syntax/mine.vim
 
 lua << EOF
+require('snacks').setup({
+  opts = {
+    -- your configuration comes here
+    -- or leave it empty to use the default settings
+    -- refer to the configuration section below
+    bigfile = { enabled = true },
+    dashboard = { enabled = true },
+    indent = { enabled = true },
+    input = { enabled = true },
+    notifier = { enabled = true },
+    quickfile = { enabled = true },
+    scroll = { enabled = true },
+    statuscolumn = { enabled = true },
+    words = { enabled = true },
+  },
+  keys = {
+    { "<leader>z",  function() Snacks.zen() end, desc = "Toggle Zen Mode" },
+  }
+})
+EOF
+
+lua << EOF
 require('telescope').setup{
   defaults = {
     vimgrep_arguments = {
@@ -269,7 +286,9 @@ require('telescope').setup{
         '--column',
         '--smart-case',
     },
-    ignore_patterns = { "*.log" },
+    file_ignore_patterns = {
+        '*.log',
+    },
     layout_strategy = 'horizontal',
     layout_config = {
       horizontal = {
@@ -285,15 +304,6 @@ require('telescope').setup{
     },
   },
 }
-EOF
-
-lua << EOF
-require("octo").setup({
-  suppress_missing_scope = {
-    projects_v2 = true,
-  },
-  enable_builtin = true,
-})
 EOF
 
 lua << EOF
