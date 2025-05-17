@@ -52,6 +52,34 @@ require("lazy").setup({
     branch = '0.1.x',
     dependencies = { 'nvim-lua/plenary.nvim' }
   },
+  {
+    "NoahTheDuke/vim-just",
+    ft = { "just" },
+  },
+  {
+    'chomosuke/term-edit.nvim',
+    event = 'TermOpen',
+    version = '1.*',
+  },
+  {
+    "toppair/peek.nvim",
+    event = { "VeryLazy" },
+    build = "deno task --quiet build:fast",
+    config = function()
+        require("peek").setup()
+        vim.api.nvim_create_user_command("PeekOpen", require("peek").open, {})
+        vim.api.nvim_create_user_command("PeekClose", require("peek").close, {})
+    end,
+  },
+  {
+    "iamcco/markdown-preview.nvim",
+    cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
+    build = "cd app && yarn install",
+    init = function()
+      vim.g.mkdp_filetypes = { "markdown" }
+    end,
+    ft = { "markdown" },
+  },
   { 'nvim-treesitter/nvim-treesitter' },
   { 'neovim/nvim-lspconfig' },
   { 'tpope/vim-fugitive' },
@@ -246,7 +274,7 @@ vim.api.nvim_create_autocmd("FileType", {
 
 -- Server.yaml EOL settings
 vim.api.nvim_create_autocmd("BufWritePre", {
-    pattern = {"server.yaml", "server_saas.yaml"},
+    pattern = {"server_saas.yaml"},
     command = "setlocal noendofline nofixendofline"
 })
 
@@ -345,6 +373,7 @@ require('telescope').setup({
         },
     },
 })
+require('term-edit').setup { prompt_end = ' ❯ ' }
 
 require('gitsigns').setup()
 
@@ -390,6 +419,14 @@ function references_preserve_view()
         vim.lsp.buf.references()
     end
 end
+
+vim.api.nvim_create_autocmd("TermOpen", {
+  pattern = "*",
+  callback = function()
+    vim.opt_local.winhighlight:append("Normal:TerminalNormal")
+    vim.api.nvim_set_hl(0, "TerminalNormal", { bg = "#000000", fg = "#ffffff" })
+  end
+})
 
 -- Copilot settings
 vim.g.copilot_filetypes = {
@@ -438,7 +475,16 @@ vim.keymap.set('n', '<leader>ix', '1z=')
 vim.keymap.set('n', '<leader>;', ':tabe<CR>')
 vim.keymap.set('n', '<leader>p', 'viwpyiw')
 vim.keymap.set('n', '<leader>v', ':terminal go test -v ./%:h -count=1 -tags=e2e_all<CR>G')
+vim.keymap.set('n', '<leader>nv', ':terminal go test -v ./%:h -count=1 -tags=e2e_all -run=^<C-r>=expand("<cword>")<CR>$<CR>G')
 vim.keymap.set('n', '<leader>ml', ':Gitsigns blame<CR>')
+
+-- scroll with ctrl-h and ctrl-l
+vim.keymap.set('n', '<C-h>', 'g<')
+vim.keymap.set('n', '<C-l>', 'g>')
+
+-- Terminal mappings
+vim.keymap.set('t', '<Esc>', '<C-\\><C-n>', {desc = 'Exit terminal mode'})
+vim.keymap.set('t', '<C-w><C-w>', '<C-\\><C-n><C-w><C-w>', {desc = 'Switch terminal windows'})
 
 -- Timestamp mappings
 vim.keymap.set('n', '<leader>now', ":put =strftime('%Y-%m-%d %H:%M:%S', localtime())<CR>A ")
@@ -452,8 +498,8 @@ vim.keymap.set('n', '<leader>nowe', ":put =strftime('%Y-%m-%d %H:%M:%S', localti
 -- Misc mappings
 vim.keymap.set('n', '<leader>q', ':q<CR>')
 vim.keymap.set('n', '<leader>eq', 'o<ESC>^C=<C-r>=repeat("=", strlen(getline(line(".")-1))-1)<CR><CR>')
-vim.keymap.set('n', '<leader>ent', 'o<TAB>toputils.SigDebugEnter(fmt.Sprintf("andrew"))<CR>defer toputils.SigDebugExit(nil)<CR><ESC>')
-vim.keymap.set('n', '<leader>util', 'otoputils "github.com/siglens/siglens/pkg/utils"<ESC>')
+vim.keymap.set('n', '<leader>ent', 'o<TAB>utils.SigDebugEnter(fmt.Sprintf("andrew"))<CR>defer utils.SigDebugExit(nil)<CR><ESC>')
+vim.keymap.set('n', '<leader>util', 'o "github.com/siglens/siglens/pkg/utils"<ESC>')
 vim.keymap.set('n', '<leader>l', ':b#<CR>')
 vim.keymap.set('n', '<leader>jsp', ':setlocal spell! spelllang=en_us<CR>:sleep 300m<CR>:setlocal nospell<CR>')
 
