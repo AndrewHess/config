@@ -28,6 +28,7 @@ augroup lsp
   au FileType go lua vim.api.nvim_buf_set_keymap(0, 'n', '<leader>jd', '<cmd>lua vim.lsp.buf.definition()<CR>', {noremap=true, silent=true})
   au FileType go lua vim.api.nvim_buf_set_keymap(0, 'n', '<leader>jh', '<cmd>lua telescope_lsp_references()<CR>', {noremap=true, silent=true})
   au FileType go lua vim.api.nvim_buf_set_keymap(0, 'n', '<leader>jf', '<cmd>lua references_preserve_view()<CR>', {noremap=true, silent=true})
+  au FileType go lua vim.api.nvim_buf_set_keymap(0, 'n', '<leader>ji', '<cmd>lua vim.lsp.buf.implementation()<CR>', {noremap=true, silent=true})
 augroup END
   " au FileType go lua vim.api.nvim_buf_set_keymap(0, 'n', '<leader>jf', '<cmd>lua vim.lsp.buf.references()<CR>', {noremap=true, silent=true})
 
@@ -93,6 +94,7 @@ nnoremap <leader>nowb :put =strftime('%Y-%m-%d %H:%M:%S')<CR>A Break<ESC>zz:w<CR
 nnoremap <leader>nowe :put =strftime('%Y-%m-%d %H:%M:%S')<CR>A Done<ESC>zz:w<CR>
 nnoremap <leader>q :q<CR>
 nnoremap <leader>eq o<ESC>^C=<C-r>=repeat('=', strlen(getline(line('.')-1))-1)<CR><CR>
+nnoremap <leader>db o<TAB>log.Infof("andrew 
 nnoremap <leader>ent o<TAB>toputils.SigDebugEnter("andrew")<CR>defer toputils.SigDebugExit(nil)<CR><ESC>
 nnoremap <leader>util otoputils "github.com/siglens/siglens/pkg/utils"<ESC>
 nnoremap <leader>l :b#<CR>

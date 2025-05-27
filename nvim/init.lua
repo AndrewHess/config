@@ -498,7 +498,8 @@ vim.keymap.set('n', '<leader>nowe', ":put =strftime('%Y-%m-%d %H:%M:%S', localti
 -- Misc mappings
 vim.keymap.set('n', '<leader>q', ':q<CR>')
 vim.keymap.set('n', '<leader>eq', 'o<ESC>^C=<C-r>=repeat("=", strlen(getline(line(".")-1))-1)<CR><CR>')
-vim.keymap.set('n', '<leader>ent', 'o<TAB>utils.SigDebugEnter(fmt.Sprintf("andrew"))<CR>defer utils.SigDebugExit(nil)<CR><ESC>')
+vim.keymap.set('n', '<leader>db', 'o<TAB>log.Infof("andrew ')
+vim.keymap.set('n', '<leader>ent', 'o<TAB>utils.SigDebugEnter(fmt.Sprintf("andrew"))<CR>initialTime := time.Now()<CR>defer utils.SigDebugExit(func() string { return fmt.Sprintf("took %v", time.Since(initialTime)) })<CR><ESC>')
 vim.keymap.set('n', '<leader>util', 'o "github.com/siglens/siglens/pkg/utils"<ESC>')
 vim.keymap.set('n', '<leader>l', ':b#<CR>')
 vim.keymap.set('n', '<leader>jsp', ':setlocal spell! spelllang=en_us<CR>:sleep 300m<CR>:setlocal nospell<CR>')
