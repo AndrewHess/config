@@ -4,19 +4,17 @@
 [pull]
   rebase = true
 [alias]
-  qlog = log -n 4 --oneline
   tree = log --all --decorate --oneline --graph
   tre  = tree -n 15
   s = status
   d = diff
+  ds = diff --staged
   ch = checkout
   diffdev = diff --merge-base develop
-  olddiffdev = "!f() { git diff $(git merge-base $1 develop) $1; }; f"
   updev = !git checkout develop && git fetch upstream && git merge upstream/develop && git checkout -
   ordev = !git checkout develop && git fetch origin && git merge origin/develop && git checkout -
   sdiff = !git diff && git submodule foreach 'git diff'
   fixup = commit --amend --no-edit
-  ds = diff --staged
 [credential]
   helper = osxkeychain
 [init]

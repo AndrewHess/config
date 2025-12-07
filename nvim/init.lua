@@ -53,6 +53,11 @@ require("lazy").setup({
     dependencies = { 'nvim-lua/plenary.nvim' }
   },
   {
+    'simrat39/rust-tools.nvim',
+    dependencies = { "neovim/nvim-lspconfig" },
+    ft = { "rust" },
+  },
+  {
     "NoahTheDuke/vim-just",
     ft = { "just" },
   },
@@ -246,17 +251,12 @@ vim.api.nvim_create_autocmd({"BufRead", "BufNewFile"}, {
 })
 
 vim.api.nvim_create_autocmd({"BufRead", "BufNewFile"}, {
-    pattern = "*.mine",
-    command = "set filetype=mine"
-})
-
-vim.api.nvim_create_autocmd({"BufRead", "BufNewFile"}, {
     pattern = "*.tpl",
     command = "set filetype=yaml"
 })
 
 -- LSP configurations
-local function setup_go_lsp_mappings()
+local function setup_lsp_mappings()
     local opts = { noremap = true, silent = true }
     vim.api.nvim_buf_set_keymap(0, 'n', '<leader>jr', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
     vim.api.nvim_buf_set_keymap(0, 'n', '<leader>ja', '<cmd>lua vim.lsp.buf.code_action()<CR>', opts)
@@ -265,11 +265,12 @@ local function setup_go_lsp_mappings()
     vim.api.nvim_buf_set_keymap(0, 'n', '<leader>jh', '<cmd>lua telescope_lsp_references()<CR>', opts)
     vim.api.nvim_buf_set_keymap(0, 'n', '<leader>jf', '<cmd>lua references_preserve_view()<CR>', opts)
     vim.api.nvim_buf_set_keymap(0, 'n', '<leader>ji', '<cmd>lua vim.lsp.buf.implementation()<CR>', opts)
+    vim.api.nvim_buf_set_keymap(0, 'n', '<leader>je', '<cmd>lua vim.diagnostic.open_float()<CR>', opts)
 end
 
 vim.api.nvim_create_autocmd("FileType", {
-    pattern = "go",
-    callback = setup_go_lsp_mappings
+    pattern = {"go", "rust"},
+    callback = setup_lsp_mappings
 })
 
 -- Server.yaml EOL settings
@@ -338,9 +339,6 @@ vim.cmd('filetype indent off')
 -- Set colorscheme
 vim.cmd('colorscheme catppuccin')
 
--- Source syntax file
-vim.cmd('source ~/.config/nvim/syntax/mine.vim')
-
 -- Setup plugins
 require('telescope').setup({
     defaults = {
@@ -357,6 +355,7 @@ require('telescope').setup({
         file_ignore_patterns = {
             '*.log',
             '.git/',
+            '.target/',
         },
         layout_strategy = 'horizontal',
         layout_config = {
@@ -378,13 +377,50 @@ require('term-edit').setup { prompt_end = ' ❯ ' }
 require('gitsigns').setup()
 
 -- LSP setup
-require('lspconfig').gopls.setup{
+vim.lsp.config("gopls", {
   settings = {
     gopls = {
-      buildFlags = {"-tags=e2e_all"}
-    }
-  }
-}
+      buildFlags = { "-tags=e2e_all" },
+    },
+  },
+})
+vim.lsp.enable("gopls")
+
+-- LSP setup for Rust
+vim.lsp.config("rust_analyzer", {
+  settings = {
+    ["rust-analyzer"] = {
+      cargo = {
+        allFeatures = true,
+      },
+      diagnostics = {
+        enable = false,
+      },
+      imports = {
+        granularity = { group = "module" },
+        prefix = "self",
+      },
+      assist = {
+        importEnforceGranularity = true,
+        importPrefix = "crate",
+      },
+      checkOnSave = {
+        command = "clippy",
+      },
+    },
+  },
+})
+vim.lsp.enable("rust_analyzer")
+
+local rt = require("rust-tools")
+rt.setup({
+  server = {
+    on_attach = function(_, bufnr)
+      vim.keymap.set("n", "K", rt.hover_actions.hover_actions, { buffer = bufnr })
+      vim.keymap.set("n", "<Leader>ca", rt.code_action_group.code_action_group, { buffer = bufnr })
+    end,
+  },
+})
 
 function telescope_lsp_references()
     require('telescope.builtin').lsp_references({
@@ -450,6 +486,10 @@ vim.keymap.set('n', '<leader>mh', ':set makeprg=go\\ vet\\ cmd/sigscalr/main.go<
 vim.keymap.set('n', '<leader>ms', ':set makeprg=go\\ vet\\ cmd/siglens/main.go<CR>:make<CR>')
 vim.keymap.set('n', '<leader>mc', ':set makeprg=go\\ vet\\ main.go<CR>:make<CR>')
 vim.keymap.set('n', '<leader>mf', ':set makeprg=make\\ lint<CR>:make<CR>')
+vim.keymap.set('n', '<leader>mr',
+  ':set makeprg=cargo\\ build<CR>:make<CR>',
+  { desc = "Cargo build project and open quickfix" }
+)
 
 -- GTD and function navigation
 vim.keymap.set('n', '<leader>d', function() require('gtd.view_manager').show_views_list() end)
@@ -469,7 +509,8 @@ vim.keymap.set('n', '<leader>ej', ':e %:h<CR>')
 vim.api.nvim_set_keymap('n', '<leader>]', ':lua ReloadTags()<CR>g<C-]>', { noremap = true, silent = true })
 vim.keymap.set('n', '<leader>k', function() CloseQuickfixPreserveMainView() end)
 vim.keymap.set('n', '<leader>b', function() ToggleBoolean() end, { silent = true })
-vim.keymap.set('n', '<leader>nn', [[<cmd>call search('^func \(([^)]\+) \)\?.', 'bWe')<CR>]])
+-- vim.keymap.set('n', '<leader>nn', [[<cmd>call search('^func \(([^)]\+) \)\?.', 'bWe')<CR>]])
+vim.keymap.set('n', '<leader>nn', [[<cmd>call search('fn \(([^)]\+) \)\?.', 'bWe')<CR>]])
 vim.keymap.set('n', '<leader>s', 'F(b')
 vim.keymap.set('n', '<leader>ix', '1z=')
 vim.keymap.set('n', '<leader>;', ':tabe<CR>')
